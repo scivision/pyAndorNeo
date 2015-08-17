@@ -47,15 +47,16 @@ def basicNeoTest(nframe,nbuffer):
     buf = np.empty((rbuf,cbuf ), np.uint16)
     
     #output image array
-    imgs = np.empty((nbuffer,cbuf,rbuf),np.uint16)
+    imgs = []#np.empty((nbuffer,cbuf,rbuf),np.uint16)
 
     logging.info('Starting Extraction loop')
     j=0
-    time.sleep(.065) #will get blank images without at least 62.5ms delay! (60.0ms doesn't work)
+    time.sleep(1) #will get blank images without at least 62.5ms delay! (60.0ms doesn't work)
     for i in range(nframe):
         while cam.ExpReady():
             cam.ExtractColor(buf, 1)
-            imgs[j,...] = buf.reshape((cbuf,rbuf),order="C")
+            imgs.append(buf.reshape((cbuf,rbuf),order="C"))
+            time.sleep(.02)
             j+=1
             
     cam.Shutdown()
@@ -67,13 +68,22 @@ def basicNeoTest(nframe,nbuffer):
 if __name__ == '__main__':
     from matplotlib.pyplot import figure,draw,pause
     
-    imgs = basicNeoTest(1,10)
+    imgs = basicNeoTest(1,1)
+    print('{} images returned'.format(len(imgs)))
     
-    fg = figure()
-    ax = fg.gca()
-    for i,I in enumerate(imgs):
-        hi=ax.imshow(I,cmap='gray')
-        #fg.colorbar(hi)
-        ax.set_title(i)
-        draw()
-        pause(0.01)
+    if False:
+        fg = figure()
+        ax = fg.gca()
+        hi=ax.imshow(imgs[0],cmap='gray')
+        for i,I in enumerate(imgs):
+            hi.set_data(I)
+            #fg.colorbar(hi)
+            ax.set_title(i)
+            draw()
+            pause(0.01)
+        
+    if False:    
+        for I in imgs:
+            cv2.imshow('frame',I)
+            if cv2.waitKey(1) & 0xFF == ord('q'):
+                break
