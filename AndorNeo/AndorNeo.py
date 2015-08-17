@@ -110,7 +110,7 @@ class AndorBase(SDK3Camera):
         self.nQueued = 0
         self.nFull = 0
         
-        self.nBuffers = nbuffer
+        self.nBuffers = 100
         
        
         
@@ -128,9 +128,9 @@ class AndorBase(SDK3Camera):
         SDK3Camera.Init(self)        
         
         #set some intial parameters
-        self.FrameCount.setValue(1)
+        #self.FrameCount.setValue(1) #only for fixed mode?
         self.CycleMode.setString(u'Continuous')
-        #self.SimplePreAmpGainControl.setString(u'12-bit (low noise)')
+        self.SimplePreAmpGainControl.setString(u'11-bit (low noise)')
         self.PixelEncoding.setString('Mono12Packed') #FIXME allow Mono16
         self.SensorCooling.setValue(False) #FIXME allow cooling selection
         self.TemperatureControl.setString('-30.00') 
@@ -384,7 +384,6 @@ class AndorBase(SDK3Camera):
         self.InitBuffers()
         self.AcquisitionStart()
 
-        return 0
         
     def StopAq(self):
         if self.CameraAcquiring.getValue():
@@ -500,7 +499,7 @@ class AndorNeo(AndorBase):
         
         self.TemperatureControl = ATEnum()
         self.TemperatureStatus = ATEnum()
-        self.PreAmpGainControl = ATEnum()
+        self.SimplePreAmpGainControl = ATEnum()
         self.BitDepth = ATEnum()
         
         self.ActualExposureTime = ATFloat()

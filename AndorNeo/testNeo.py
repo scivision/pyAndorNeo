@@ -23,10 +23,11 @@
 
 from __future__ import absolute_import
 import time
+from copy import copy
 import numpy as np
 import logging
 logging.basicConfig(format='%(asctime)s.%(msecs)03d %(filename)s/%(funcName)s:%(lineno)d %(message)s', datefmt='%Y-%m-%d %H:%M:%S',
-                    level=logging.INFO)
+                    level=logging.WARNING)
 
 def basicNeoTest(nframe,nbuffer):
     logging.info('Importing Camera')
@@ -50,14 +51,13 @@ def basicNeoTest(nframe,nbuffer):
     imgs = []#np.empty((nbuffer,cbuf,rbuf),np.uint16)
 
     logging.info('Starting Extraction loop')
-    j=0
     time.sleep(1) #will get blank images without at least 62.5ms delay! (60.0ms doesn't work)
     for i in range(nframe):
         while cam.ExpReady():
             cam.ExtractColor(buf, 1)
-            imgs.append(buf.reshape((cbuf,rbuf),order="C"))
-            time.sleep(.02)
-            j+=1
+            # WARNING: copy(buf) is absolutely necessary or all images will be the same!
+            imgs.append(copy(buf).reshape((cbuf,rbuf),order="C"))
+        time.sleep(1)
             
     cam.Shutdown()
     time.sleep(.05)
@@ -68,10 +68,12 @@ def basicNeoTest(nframe,nbuffer):
 if __name__ == '__main__':
     from matplotlib.pyplot import figure,draw,pause
     
-    imgs = basicNeoTest(1,1)
+    imgs = basicNeoTest(3,1)
     print('{} images returned'.format(len(imgs)))
     
-    if False:
+    print(imgs[0]==imgs[1]).all()
+    
+    if 0:
         fg = figure()
         ax = fg.gca()
         hi=ax.imshow(imgs[0],cmap='gray')
