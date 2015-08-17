@@ -22,6 +22,7 @@
 ################
 
 from __future__ import absolute_import
+import logging
 try:
     from . import SDK3
 except:

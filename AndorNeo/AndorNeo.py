@@ -27,6 +27,8 @@ import threading
 import ctypes
 import time
 import traceback
+import logging
+
 from six import PY3
 if PY3:
     import queue as Queue
@@ -37,10 +39,14 @@ try:
     from .SDK3Cam import *
 except:
     from SDK3Cam import *
-#from fftw3f import create_aligned_array
-#from PYME.Acquire import MetaDataHandler
-#from PYME.Acquire import eventLog
 
+try: #not used outside of PYME
+    from fftw3f import create_aligned_array
+    from PYME.Acquire import MetaDataHandler
+    from PYME.Acquire import eventLog
+except:
+    pass
+    
 class AndorBase(SDK3Camera):
     numpy_frames=1
     MODE_CONTINUOUS = 1
@@ -115,7 +121,10 @@ class AndorBase(SDK3Camera):
         self._frameRate = 0
         
         #register as a provider of metadata
-        #MetaDataHandler.provideStartMetadata.append(self.GenStartMetadata)
+        try:
+            MetaDataHandler.provideStartMetadata.append(self.GenStartMetadata)
+        except:
+            pass
         
     def Init(self):
         SDK3Camera.Init(self)        
@@ -360,7 +369,11 @@ class AndorBase(SDK3Camera):
         self._temp = self.SensorTemperature.getValue()
         self._frameRate = self.FrameRate.getValue()
         
-        eventLog.logEvent('StartAq', '')
+        try:
+            eventLog.logEvent('StartAq', '')
+        except:
+            pass
+        logging.info('StartAq')
         self._flush()
         self.InitBuffers()
         self.AcquisitionStart()
