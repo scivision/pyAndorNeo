@@ -57,7 +57,6 @@ def basicNeoTest(nframe,nbuffer):
             cam.ExtractColor(buf, 1)
             # WARNING: copy(buf) is absolutely necessary or all images will be the same!
             imgs.append(copy(buf).reshape((cbuf,rbuf),order="C"))
-        time.sleep(1)
             
     cam.Shutdown()
     time.sleep(.05)
@@ -66,12 +65,14 @@ def basicNeoTest(nframe,nbuffer):
     return imgs
     
 if __name__ == '__main__':
+    import h5py
     from matplotlib.pyplot import figure,draw,pause
     
     imgs = basicNeoTest(3,1)
     print('{} images returned'.format(len(imgs)))
     
-    print(imgs[0]==imgs[1]).all()
+    with h5py.File('blah.h5','w',libver='latest') as f:
+        f['/imgs'] = imgs
     
     if 0:
         fg = figure()
