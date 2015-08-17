@@ -28,12 +28,12 @@ import logging
 logging.basicConfig(format='%(asctime)s.%(msecs)03d %(filename)s/%(funcName)s:%(lineno)d %(message)s', datefmt='%Y-%m-%d %H:%M:%S',
                     level=logging.INFO)
 
-def basicNeoTest(nframe):
+def basicNeoTest(nframe,nbuffer):
     logging.info('Importing Camera')
     import AndorNeo
     #%%
     logging.info('Initialising Camera')
-    cam = AndorNeo.AndorNeo(0,nbuffer=1)
+    cam = AndorNeo.AndorNeo(0,nbuffer)
     cam.Init()
 
     cam.SetIntegTime(1) #exposure milliseconds
@@ -45,30 +45,35 @@ def basicNeoTest(nframe):
     # this is one single frame, no more
     rbuf,cbuf = cam.GetPicWidth(),cam.GetPicHeight()
     buf = np.empty((rbuf,cbuf ), np.uint16)
+    
+    #output image array
+    imgs = np.empty((nbuffer,cbuf,rbuf),np.uint16)
 
     logging.info('Starting Extraction loop')
     j=0
-    time.sleep(.0625) #will get blank images without at least 62.5ms delay! (60.0ms doesn't work)
+    time.sleep(.065) #will get blank images without at least 62.5ms delay! (60.0ms doesn't work)
     for i in range(nframe):
         while cam.ExpReady():
             cam.ExtractColor(buf, 1)
+            imgs[j,...] = buf.reshape((cbuf,rbuf),order="C")
             j+=1
             
-    
-    print(j)
     cam.Shutdown()
-    time.sleep(.1)
+    time.sleep(.05)
     AndorNeo.camReg.unregCamera()  
 
-    return buf.reshape(cbuf,rbuf)
+    return imgs
     
 if __name__ == '__main__':
-    from matplotlib.pyplot import figure,show
+    from matplotlib.pyplot import figure,draw,pause
     
-    buf = basicNeoTest(1)
+    imgs = basicNeoTest(1,10)
     
     fg = figure()
     ax = fg.gca()
-    hi=ax.imshow(buf,cmap='gray')
-    fg.colorbar(hi)
-    show()
+    for i,I in enumerate(imgs):
+        hi=ax.imshow(I,cmap='gray')
+        #fg.colorbar(hi)
+        ax.set_title(i)
+        draw()
+        pause(0.01)
