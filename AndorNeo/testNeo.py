@@ -28,24 +28,25 @@ import logging
 logging.basicConfig(format='%(asctime)s.%(msecs)03d %(filename)s/%(funcName)s:%(lineno)d %(message)s', datefmt='%Y-%m-%d %H:%M:%S',
                     level=logging.INFO)
 
-def basicNeoTest():
-    logging.info('Importing Camera ... ')
+def basicNeoTest(nframe):
+    logging.info('Importing Camera')
     import AndorNeo
     #%%
-    logging.info('Initialising Camera ... ')
+    logging.info('Initialising Camera')
     cam = AndorNeo.AndorNeo(0)
     cam.Init()
 
     cam.SetIntegTime(1) #exposure milliseconds
     #cam.PixelReadoutRate.setIndex(2)
     #%%
-    logging.info('Starting Exposure ...')
+    logging.info('Starting Exposure')
     cam.StartExposure()
 
-    buf = np.empty((cam.GetPicWidth(), cam.GetPicHeight()), 'uint16')
+    # this is one single frame, no more
+    buf = np.empty((cam.GetPicWidth(), cam.GetPicHeight()), np.uint16)
 
-    logging.info('Starting Extraction loop ...')
-    for i in range(200):
+    logging.info('Starting Extraction loop')
+    for i in range(nframe):
         while cam.ExpReady():
             cam.ExtractColor(buf, 1)
         
@@ -60,4 +61,4 @@ def basicNeoTest():
     return buf
     
 if __name__ == '__main__':
-    buf = basicNeoTest()
+    buf = basicNeoTest(10)

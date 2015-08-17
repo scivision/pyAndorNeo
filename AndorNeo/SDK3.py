@@ -38,7 +38,6 @@ _stdcall_libraries = {}
 
 arch, plat = platform.architecture()
 
-#if 'WinDLL' in dir():
 if plat.startswith('Windows'):
     _stdcall_libraries['ATCORE'] = ctypes.WinDLL('atcore')
     _stdcall_libraries['ATUTIL'] = ctypes.WinDLL('atutility')

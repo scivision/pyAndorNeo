@@ -40,12 +40,11 @@ try:
 except:
     from SDK3Cam import *
 
-try: #not used outside of PYME
+PYME=False
+if PYME: #not used outside of PYME
     from fftw3f import create_aligned_array
     from PYME.Acquire import MetaDataHandler
     from PYME.Acquire import eventLog
-except:
-    pass
     
 class AndorBase(SDK3Camera):
     numpy_frames=1
@@ -84,6 +83,7 @@ class AndorBase(SDK3Camera):
         self.AOILeft = ATInt()
         self.AOITop = ATInt()
         self.AOIWidth = ATInt()
+        self.AOIStride = ATInt()
         self.FrameCount = ATInt()
         self.ImageSizeBytes = ATInt()
         self.SensorHeight = ATInt()
@@ -121,10 +121,8 @@ class AndorBase(SDK3Camera):
         self._frameRate = 0
         
         #register as a provider of metadata
-        try:
+        if PYME:
             MetaDataHandler.provideStartMetadata.append(self.GenStartMetadata)
-        except:
-            pass
         
     def Init(self):
         SDK3Camera.Init(self)        
@@ -132,9 +130,10 @@ class AndorBase(SDK3Camera):
         #set some intial parameters
         self.FrameCount.setValue(1)
         self.CycleMode.setString(u'Continuous')
-        self.PixelEncoding.setString('Mono12')
-        self.SensorCooling.setValue(True)
-        self.TemperatureControl.setString('-30.00')
+        #self.SimplePreAmpGainControl.setString(u'12-bit (low noise)')
+        self.PixelEncoding.setString('Mono12') #FIXME allow Mono16
+        self.SensorCooling.setValue(False) #FIXME allow cooling selection
+        self.TemperatureControl.setString('-30.00') 
         #self.PixelReadoutRate.setIndex(1)
         
         #set up polling thread        
@@ -260,8 +259,14 @@ class AndorBase(SDK3Camera):
         #chSlice[:,:] = bv
         
         #FIXME mscvrt windows only?
-        ctypes.cdll.msvcrt.memcpy(chSlice.ctypes.data_as(ctypes.POINTER(ctypes.c_uint8)), buf.ctypes.data_as(ctypes.POINTER(ctypes.c_uint8)), chSlice.nbytes)
-        #print 'f'
+        #ctypes.cdll.msvcrt.memcpy(chSlice.ctypes.data_as(ctypes.POINTER(ctypes.c_uint8)), buf.ctypes.data_as(ctypes.POINTER(ctypes.c_uint8)), chSlice.nbytes)
+        
+        xs, ys = chSlice.shape[:2]
+        a_s = self.AOIStride.getValue()
+        dt = self.PixelEncoding.getString()
+        SDK3.ConvertBuffer(buf.ctypes.data_as(ctypes.POINTER(ctypes.c_uint8)), 
+                           chSlice.ctypes.data_as(ctypes.POINTER(ctypes.c_uint8)), 
+                           xs, ys, a_s, dt, 'Mono16')
         
         #recycle buffer
         self._queueBuffer(buf)
@@ -371,10 +376,9 @@ class AndorBase(SDK3Camera):
         self._temp = self.SensorTemperature.getValue()
         self._frameRate = self.FrameRate.getValue()
         
-        try:
+        if PYME:
             eventLog.logEvent('StartAq', '')
-        except:
-            pass
+        
         logging.info('StartAq')
         self._flush()
         self.InitBuffers()
