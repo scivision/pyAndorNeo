@@ -33,7 +33,7 @@ def basicNeoTest(nframe):
     import AndorNeo
     #%%
     logging.info('Initialising Camera')
-    cam = AndorNeo.AndorNeo(0)
+    cam = AndorNeo.AndorNeo(0,nbuffer=1)
     cam.Init()
 
     cam.SetIntegTime(1) #exposure milliseconds
@@ -43,22 +43,32 @@ def basicNeoTest(nframe):
     cam.StartExposure()
 
     # this is one single frame, no more
-    buf = np.empty((cam.GetPicWidth(), cam.GetPicHeight()), np.uint16)
+    rbuf,cbuf = cam.GetPicWidth(),cam.GetPicHeight()
+    buf = np.empty((rbuf,cbuf ), np.uint16)
 
     logging.info('Starting Extraction loop')
+    j=0
+    time.sleep(.0625) #will get blank images without at least 62.5ms delay! (60.0ms doesn't work)
     for i in range(nframe):
         while cam.ExpReady():
             cam.ExtractColor(buf, 1)
-        
-        time.sleep(.001)
+            j+=1
             
-    time.sleep(1)
-
+    
+    print(j)
     cam.Shutdown()
-    time.sleep(1)
+    time.sleep(.1)
     AndorNeo.camReg.unregCamera()  
 
-    return buf
+    return buf.reshape(cbuf,rbuf)
     
 if __name__ == '__main__':
-    buf = basicNeoTest(10)
+    from matplotlib.pyplot import figure,show
+    
+    buf = basicNeoTest(1)
+    
+    fg = figure()
+    ax = fg.gca()
+    hi=ax.imshow(buf,cmap='gray')
+    fg.colorbar(hi)
+    show()

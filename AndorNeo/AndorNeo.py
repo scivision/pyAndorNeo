@@ -61,7 +61,7 @@ class AndorBase(SDK3Camera):
                  (240,256,953,1177),
                  (144,128,1017,1225)]
     
-    def __init__(self, camNum):
+    def __init__(self, camNum,nbuffer):
         #define properties
         self.CameraAcquiring = ATBool()
         self.SensorCooling = ATBool()
@@ -110,7 +110,7 @@ class AndorBase(SDK3Camera):
         self.nQueued = 0
         self.nFull = 0
         
-        self.nBuffers = 100
+        self.nBuffers = nbuffer
         
        
         
@@ -131,7 +131,7 @@ class AndorBase(SDK3Camera):
         self.FrameCount.setValue(1)
         self.CycleMode.setString(u'Continuous')
         #self.SimplePreAmpGainControl.setString(u'12-bit (low noise)')
-        self.PixelEncoding.setString('Mono12') #FIXME allow Mono16
+        self.PixelEncoding.setString('Mono12Packed') #FIXME allow Mono16
         self.SensorCooling.setValue(False) #FIXME allow cooling selection
         self.TemperatureControl.setString('-30.00') 
         #self.PixelReadoutRate.setIndex(1)
@@ -267,7 +267,7 @@ class AndorBase(SDK3Camera):
         SDK3.ConvertBuffer(buf.ctypes.data_as(ctypes.POINTER(ctypes.c_uint8)), 
                            chSlice.ctypes.data_as(ctypes.POINTER(ctypes.c_uint8)), 
                            xs, ys, a_s, dt, 'Mono16')
-        
+
         #recycle buffer
         self._queueBuffer(buf)
         
@@ -481,7 +481,8 @@ class AndorBase(SDK3Camera):
         return self._frameRate
         
     def __del__(self):
-        self.Shutdown()
+        pass
+#        self.Shutdown()
         #self.compT.kill = True
 
         
@@ -489,7 +490,7 @@ class AndorBase(SDK3Camera):
         
         
 class AndorNeo(AndorBase):              
-    def __init__(self, camNum):
+    def __init__(self, camNum,nbuffer):
         #define properties
         self.Overlap = ATBool()
         self.SpuriousNoiseFilter = ATBool()
@@ -515,7 +516,7 @@ class AndorNeo(AndorBase):
         self.ControllerID = ATString()
         self.FirmwareVersion = ATString()
         
-        AndorBase.__init__(self,camNum)
+        AndorBase.__init__(self,camNum,nbuffer)
         
 class AndorSim(AndorBase):
     def __init__(self, camNum):
