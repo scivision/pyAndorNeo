@@ -211,10 +211,10 @@ class AndorBase(SDK3Camera):
             #else:
             #    self.fLog.write('%f\tn\n' % time.time())
             return
-        #except SDK3.CameraError as e:
+        except SDK3.CameraError as e:
         #    if not e.errNo == SDK3.AT_ERR_NODATA:
         #        traceback.print_exc()
-        #    return
+            return
             
         #self.camLock.acquire()
         buf = self.queuedBuffers.get()
@@ -258,6 +258,8 @@ class AndorBase(SDK3Camera):
         #bv = buf.view(chSlice.dtype).reshape(chSlice.shape)
         #chSlice[:] = bv
         #chSlice[:,:] = bv
+        
+        #FIXME mscvrt windows only?
         ctypes.cdll.msvcrt.memcpy(chSlice.ctypes.data_as(ctypes.POINTER(ctypes.c_uint8)), buf.ctypes.data_as(ctypes.POINTER(ctypes.c_uint8)), chSlice.nbytes)
         #print 'f'
         

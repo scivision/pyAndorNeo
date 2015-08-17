@@ -33,7 +33,6 @@ C:\Program Files\Andor Driver Pack 3
 from __future__ import absolute_import
 import ctypes
 import platform
-#import ctypes
 
 _stdcall_libraries = {}
 

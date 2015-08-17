@@ -36,7 +36,7 @@ def basicNeoTest():
     cam = AndorNeo.AndorNeo(0)
     cam.Init()
 
-    cam.SetIntegTime(100)
+    cam.SetIntegTime(1) #exposure milliseconds
     #cam.PixelReadoutRate.setIndex(2)
     #%%
     logging.info('Starting Exposure ...')
@@ -44,20 +44,20 @@ def basicNeoTest():
 
     buf = np.empty((cam.GetPicWidth(), cam.GetPicHeight()), 'uint16')
 
-    print('Starting Extraction loop ...')
+    logging.info('Starting Extraction loop ...')
     for i in range(200):
-        #print(i, end=' ')
         while cam.ExpReady():
             cam.ExtractColor(buf, 1)
-            #print('e', end=' ')
         
-        time.sleep(.2)
+        time.sleep(.001)
             
-    time.sleep(20)
+    time.sleep(1)
 
     cam.Shutdown()
-    time.sleep(.5)
+    time.sleep(1)
     AndorNeo.camReg.unregCamera()  
 
+    return buf
+    
 if __name__ == '__main__':
-    basicNeoTest()
+    buf = basicNeoTest()
