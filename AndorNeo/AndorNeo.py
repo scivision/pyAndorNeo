@@ -115,7 +115,7 @@ class AndorBase(SDK3Camera):
         self._frameRate = 0
         
         #register as a provider of metadata
-        MetaDataHandler.provideStartMetadata.append(self.GenStartMetadata)
+        #MetaDataHandler.provideStartMetadata.append(self.GenStartMetadata)
         
     def Init(self):
         SDK3Camera.Init(self)        
