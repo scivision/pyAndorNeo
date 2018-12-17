@@ -35,10 +35,7 @@ if PY3:
 else:
     import Queue
 
-try:    
-    from .SDK3Cam import *
-except:
-    from SDK3Cam import *
+from .SDK3Cam import *
 
 PYME=False
 if PYME: #not used outside of PYME

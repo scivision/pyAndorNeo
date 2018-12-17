@@ -39,8 +39,13 @@ _stdcall_libraries = {}
 arch, plat = platform.architecture()
 
 if plat.startswith('Windows'):
-    _stdcall_libraries['ATCORE'] = ctypes.WinDLL('atcore')
-    _stdcall_libraries['ATUTIL'] = ctypes.WinDLL('atutility')
+    try:
+        _stdcall_libraries['ATCORE'] = ctypes.WinDLL('atcore')
+        _stdcall_libraries['ATUTIL'] = ctypes.WinDLL('atutility')
+    except OSError:
+        print('atcore and atutlity DLL not found')
+        print('Please add the directory containing them to the Path environment variable')
+        raise
 else:
     _stdcall_libraries['ATCORE'] = ctypes.CDLL('atcore.so')
     _stdcall_libraries['ATUTIL'] = ctypes.CDLL('atutility.so')

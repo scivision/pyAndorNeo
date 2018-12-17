@@ -23,10 +23,7 @@
 
 from __future__ import absolute_import
 import logging
-try:
-    from . import SDK3
-except:
-    import SDK3
+from . import SDK3
     
 class ATProperty(object):
     def connect(self, handle, propertyName):
