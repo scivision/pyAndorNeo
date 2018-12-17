@@ -130,7 +130,12 @@ class AndorBase(SDK3Camera):
         self.SimplePreAmpGainControl.setString(u'11-bit (low noise)')
         self.PixelEncoding.setString('Mono12Packed') #FIXME allow Mono16
         self.SensorCooling.setValue(False) #FIXME allow cooling selection
-        self.TemperatureControl.setString('-30.00') 
+        try:
+            self.TemperatureControl.setString('-30.00')
+        except SDK3.CameraError:
+            # Some camera cannot write the temperature control and returns
+            # AT_ERR_NOTWRITABLE
+            pass
         #self.PixelReadoutRate.setIndex(1)
         
         #set up polling thread        
