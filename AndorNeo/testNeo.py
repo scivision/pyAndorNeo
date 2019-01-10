@@ -29,64 +29,66 @@ import logging
 logging.basicConfig(format='%(asctime)s.%(msecs)03d %(filename)s/%(funcName)s:%(lineno)d %(message)s', datefmt='%Y-%m-%d %H:%M:%S',
                     level=logging.WARNING)
 
-def basicNeoTest(nframe,nbuffer):
+
+def basicNeoTest(nframe, nbuffer):
     logging.info('Importing Camera')
     import AndorNeo
-    #%%
+    # %%
     logging.info('Initialising Camera')
-    cam = AndorNeo.AndorNeo(0,nbuffer)
+    cam = AndorNeo.AndorNeo(0, nbuffer)
     cam.Init()
 
-    cam.SetIntegTime(1) #exposure milliseconds
-    #cam.PixelReadoutRate.setIndex(2)
-    #%%
+    cam.SetIntegTime(1)  # exposure milliseconds
+    # cam.PixelReadoutRate.setIndex(2)
+    # %%
     logging.info('Starting Exposure')
     cam.StartExposure()
 
     # this is one single frame, no more
-    rbuf,cbuf = cam.GetPicWidth(),cam.GetPicHeight()
-    buf = np.empty((rbuf,cbuf ), np.uint16)
-    
-    #output image array
-    imgs = []#np.empty((nbuffer,cbuf,rbuf),np.uint16)
+    rbuf, cbuf = cam.GetPicWidth(), cam.GetPicHeight()
+    buf = np.empty((rbuf, cbuf), np.uint16)
+
+    # output image array
+    imgs = []  # np.empty((nbuffer,cbuf,rbuf),np.uint16)
 
     logging.info('Starting Extraction loop')
-    time.sleep(1) #will get blank images without at least 62.5ms delay! (60.0ms doesn't work)
+    time.sleep(1)  # will get blank images without at least 62.5ms delay! (60.0ms doesn't work)
     for i in range(nframe):
         while cam.ExpReady():
             cam.ExtractColor(buf, 1)
             # WARNING: copy(buf) is absolutely necessary or all images will be the same!
-            imgs.append(copy(buf).reshape((cbuf,rbuf),order="C"))
-            
+            imgs.append(copy(buf).reshape((cbuf, rbuf), order="C"))
+
     cam.Shutdown()
     time.sleep(.05)
-    AndorNeo.camReg.unregCamera()  
+    AndorNeo.camReg.unregCamera()
 
     return imgs
-    
+
+
 if __name__ == '__main__':
     import h5py
-    from matplotlib.pyplot import figure,draw,pause
-    
-    imgs = basicNeoTest(3,1)
+    from matplotlib.pyplot import figure, draw, pause
+
+    imgs = basicNeoTest(3, 1)
     print('{} images returned'.format(len(imgs)))
-    
-    with h5py.File('blah.h5','w',libver='latest') as f:
+
+    with h5py.File('blah.h5', 'w', libver='latest') as f:
         f['/imgs'] = imgs
-    
+
     if 0:
         fg = figure()
         ax = fg.gca()
-        hi=ax.imshow(imgs[0],cmap='gray')
-        for i,I in enumerate(imgs):
+        hi = ax.imshow(imgs[0], cmap='gray')
+        for i, I in enumerate(imgs):
             hi.set_data(I)
-            #fg.colorbar(hi)
+            # fg.colorbar(hi)
             ax.set_title(i)
             draw()
             pause(0.01)
-        
-    if False:    
+
+    if False:
         for I in imgs:
-            cv2.imshow('frame',I)
+            cv2.imshow('frame', I)
             if cv2.waitKey(1) & 0xFF == ord('q'):
                 break
